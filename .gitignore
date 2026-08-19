@@ -1,0 +1,22 @@
+# Old subfolder clone
+predict-to-protect/
+
+# Python cache and temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Streamlit/OS/IDE configs
+.streamlit/
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

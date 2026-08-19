@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predict-to-Protect | AI Rice Pest Early Warning Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Top Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">🌾</div>
+                <div>
+                    <h1 class="brand-title">PREDICT-TO-PROTECT</h1>
+                    <p class="brand-tagline">AI-Powered Rice Pest Outbreak Early Warning Copilot</p>
+                </div>
+            </div>
+            <div class="nav-status">
+                <span class="pulse-dot"></span>
+                <span class="status-text">AI ENSEMBLE ENGINE ACTIVE</span>
+                <span class="badge-horizon">2–3 WEEKS AHEAD</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main class="dashboard-wrapper">
+        <div class="dashboard-grid">
+            
+            <!-- LEFT PANEL: Farmer Inputs & Auto Climate -->
+            <section class="left-panel">
+                
+                <!-- Farm Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="card-icon">📍</span> Farm & Crop Profile
+                        </h2>
+                        <span class="badge-tag">FARMER INPUT</span>
+                    </div>
+
+                    <form id="farm-form" class="form-grid">
+                        <div class="form-group">
+                            <label>Location Input Mode</label>
+                            <div class="radio-toggle" style="margin-bottom: 4px;">
+                                <label class="radio-label">
+                                    <input type="radio" name="loc_mode" value="preset" checked> Preset Rice Hub
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="loc_mode" value="manual"> ✏️ Manual City / District
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="preset-location-group">
+                            <label for="location-select">Select Agro-Climatic Hub (Auto-Geocoded)</label>
+                            <select id="location-select" class="form-control">
+                                {% for loc in preset_locations %}
+                                <option value="{{ loc }}">{{ loc }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="manual-location-group" style="display: none;">
+                            <label for="manual-location-input">Enter Manual Location (City / District / State)</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="manual-location-input" class="form-control" placeholder="e.g. Varanasi, Bhubaneswar, Gorakhpur" value="Bhubaneswar, Odisha">
+                                <button type="button" id="btn-sync-manual-loc" class="btn-sync-loc" title="Fetch Live Weather">
+                                    🔍 Sync
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="variety-select">Rice Cultivar / Variety</label>
+                            <select id="variety-select" class="form-control">
+                                <option value="Swarna (MTU 7029)">Swarna (MTU 7029)</option>
+                                <option value="Basmati 370">Basmati 370</option>
+                                <option value="IR64">IR64</option>
+                                <option value="Samba Mahsuri (BPT 5204)">Samba Mahsuri (BPT 5204)</option>
+                                <option value="MTU 1010">MTU 1010</option>
+                                <option value="Pusa 44">Pusa 44</option>
+                                <option value="Pooja">Pooja</option>
+                                <option value="Jasmine">Jasmine</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stage-select">Crop Growth Stage</label>
+                            <select id="stage-select" class="form-control">
+                                <option value="Nursery">Nursery</option>
+                                <option value="Tillering">Tillering</option>
+                                <option value="Vegetative / Stem Elongation" selected>Vegetative / Stem Elongation</option>
+                                <option value="Booting / Panicle Initiation">Booting / Panicle Initiation</option>
+                                <option value="Flowering / Heading">Flowering / Heading</option>
+                                <option value="Milking / Ripening">Milking / Ripening</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="soil-select">Soil Texture Type</label>
+                            <select id="soil-select" class="form-control">
+                                <option value="Loamy" selected>Loamy</option>
+                                <option value="Clayey">Clayey</option>
+                                <option value="Alluvial">Alluvial</option>
+                                <option value="Clay Loam">Clay Loam</option>
+                                <option value="Sandy Loam">Sandy Loam</option>
+                                <option value="Black">Black</option>
+                                <option value="Red">Red</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>Prior Pest History?</label>
+                                <div class="radio-toggle">
+                                    <label class="radio-label">
+                                        <input type="radio" name="prev_pest" value="1" checked> Yes
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="prev_pest" value="0"> No
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group" id="prev-pest-type-group">
+                                <label for="prev-pest-type">Previous Pest</label>
+                                <select id="prev-pest-type" class="form-control">
+                                    <option value="Brownplanthopper">Brown Planthopper</option>
+                                    <option value="Yellowstemborer">Yellow Stem Borer</option>
+                                    <option value="Gallmidge">Gall Midge</option>
+                                    <option value="LeafFolder">Leaf Folder</option>
+                                    <option value="Greenleafhopper">Green Leafhopper</option>
+                                    <option value="LeafBlast">Leaf Blast</option>
+                                    <option value="NeckBlast">Neck Blast</option>
+                                    <option value="Caseworm">Caseworm</option>
+                                    <option value="Whitebackedplanthopper">WBPH</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Live Climate Conditions Card -->
+                <div class="card weather-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="card-icon">🌦️</span> Automated Climate Intelligence
+                        </h2>
+                        <span id="weather-source-badge" class="badge-source">Open-Meteo Live API</span>
+                    </div>
+                    
+                    <div class="resolved-location" id="resolved-location-text">
+                        📍 Resolved: Cuttack, Odisha (20.46°N, 85.88°E)
+                    </div>
+
+                    <div class="weather-grid">
+                        <div class="stat-cell">
+                            <div class="stat-title">🌡️ Temperature</div>
+                            <div class="stat-num" id="w-temp">29.4 <span class="stat-unit">°C</span></div>
+                            <div class="stat-footer" id="w-temp-sub">Max: 32.5° | Min: 24.0°</div>
+                        </div>
+
+                        <div class="stat-cell">
+                            <div class="stat-title">💧 Humidity (RH)</div>
+                            <div class="stat-num" id="w-humidity">82 <span class="stat-unit">%</span></div>
+                            <div class="stat-footer" id="w-rh-sub">Morning RH: 88%</div>
+                        </div>
+
+                        <div class="stat-cell">
+                            <div class="stat-title">🌧️ 7-Day Rainfall</div>
+                            <div class="stat-num" id="w-rain">22.5 <span class="stat-unit">mm</span></div>
+                            <div class="stat-footer" id="w-rain-sub">14-Day: 40.5 mm</div>
+                        </div>
+
+                        <div class="stat-cell">
+                            <div class="stat-title">📈 Rainfall Trend</div>
+                            <div class="stat-num" id="w-trend-val">
+                                <span id="w-trend-badge" class="trend-badge trend-up">↑ +24.0%</span>
+                            </div>
+                            <div class="stat-footer" id="w-trend-sub">Increasing vs prior 7d</div>
+                        </div>
+                    </div>
+
+                    <div class="weather-footer-bar">
+                        <span>💨 Wind: <strong id="w-wind">11.0 km/h</strong></span>
+                        <span>☀️ Sunshine: <strong id="w-sun">6.8 hrs</strong></span>
+                        <span>💧 Evap: <strong id="w-evap">4.5 mm</strong></span>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button id="btn-predict" class="btn-primary-glow">
+                    <span class="btn-icon">🔮</span> PREDICT PEST OUTBREAK (NEXT 2–3 WEEKS)
+                </button>
+            </section>
+
+
+            <!-- RIGHT PANEL: Outbreak Risk Dashboard, XAI & Farmer Advisory -->
+            <section class="right-panel">
+                
+                <!-- Outbreak Alert Banner & Risk Meter -->
+                <div class="card result-card" id="result-card">
+                    <div class="result-header">
+                        <div>
+                            <span class="badge-horizon-dark">HORIZON: 2–3 WEEKS AHEAD (14–21 DAYS)</span>
+                            <h2 class="result-headline" id="res-alert-title">
+                                🚨 HIGH RISK DETECTED: Impending Brown Planthopper Outbreak
+                            </h2>
+                        </div>
+                        <div class="risk-badge-box">
+                            <div class="risk-badge risk-badge-high" id="res-risk-badge">
+                                🔴 HIGH RISK
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-trio">
+                        <div class="metric-trio-box">
+                            <div class="trio-label">PREDICTED TARGET PEST</div>
+                            <div class="trio-value-main" id="res-pest-name">Brown Planthopper</div>
+                            <div class="trio-sub" id="res-pest-sci">(Nilaparvata lugens)</div>
+                        </div>
+
+                        <div class="metric-trio-box text-center">
+                            <div class="trio-label">OUTBREAK PROBABILITY</div>
+                            <div class="trio-prob-val" id="res-prob-val">82.4%</div>
+                            <div class="trio-sub">Soft Calibrated Ensemble</div>
+                        </div>
+
+                        <div class="metric-trio-box">
+                            <div class="trio-label">MODEL CONSENSUS</div>
+                            <div class="trio-consensus-row">🌳 RF Probability: <strong id="res-rf-prob">78.0%</strong></div>
+                            <div class="trio-consensus-row">⚡ XGB Probability: <strong id="res-xgb-prob">86.0%</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="result-summary-box" id="res-summary-text">
+                        The AI Ensemble predicts an elevated <strong>82.4% probability</strong> of Brown Planthopper outbreak within the <strong>next 2–3 weeks</strong>. Immediate preventive IPM measures are recommended before economic thresholds are breached.
+                    </div>
+                </div>
+
+                <!-- Charts Row: Species Spectrum & Explainability -->
+                <div class="two-col-grid">
+                    
+                    <!-- Pest Species Spectrum -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><span class="card-icon">🐛</span> Pest Species Risk Spectrum</h3>
+                            <span class="badge-tag">11 PEST CLASSES</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="pestChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Explainable AI (SHAP) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><span class="card-icon">🔍</span> Why Did AI Predict This?</h3>
+                            <span class="badge-tag" style="background:#EEF2FF; color:#4F46E5;">SHAP XAI</span>
+                        </div>
+                        <div class="xai-summary-note" id="xai-summary-note">
+                            💡 <strong>Key Rationale:</strong> High relative humidity (>80%) combined with increasing rainfall trend and vegetative growth stage create optimal incubation microclimates.
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="shapChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actionable Farmer Advisory & IPM Checklist -->
+                <div class="card advisory-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="card-icon">👨‍🌾</span> Actionable IPM Preventive Checklist</h3>
+                        <span class="badge-tag" style="background:#ECFDF5; color:#059669;">INTEGRATED PEST MANAGEMENT</span>
+                    </div>
+
+                    <div class="advisory-meta">
+                        <span><strong>Vulnerable Crop Stage:</strong> <span id="adv-vuln-stage">Tillering to Panicle Initiation</span></span>
+                        <span><strong>Favorable Climate:</strong> <span id="adv-fav-clim">High humidity (>80%), stagnant water</span></span>
+                    </div>
+
+                    <div id="advisory-steps-list" class="advisory-steps">
+                        <!-- Dynamic Steps Inserted Here -->
+                    </div>
+
+                    <div id="contextual-notes-box" class="contextual-box">
+                        <!-- Dynamic Context Notes -->
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>🌾 <strong>Predict-to-Protect</strong> | Location-Aware AI Rice Pest Outbreak Early Warning System</p>
+        <p class="footer-sub">Powered by Random Forest, XGBoost & TreeSHAP | Historical Surveillance & Open-Meteo Climate Intelligence</p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
