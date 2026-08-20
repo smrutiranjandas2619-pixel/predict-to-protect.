@@ -234,7 +234,7 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 # Load Trained Models & Artifacts
 @st.cache_resource
 def load_all_models(models_dir='models'):
-    try:
+    def do_load():
         preprocessor = joblib.load(os.path.join(models_dir, 'preprocessor.joblib'))
         rf_outbreak = joblib.load(os.path.join(models_dir, 'rf_outbreak_model.joblib'))
         xgb_outbreak = joblib.load(os.path.join(models_dir, 'xgb_outbreak_model.joblib'))
@@ -257,8 +257,15 @@ def load_all_models(models_dir='models'):
             'metadata': metadata,
             'status': 'loaded'
         }
+    try:
+        return do_load()
     except Exception as e:
-        return {'status': 'error', 'message': str(e)}
+        try:
+            from train_models import train_and_evaluate_models
+            train_and_evaluate_models(data_dir='data', output_dir=models_dir)
+            return do_load()
+        except Exception as retrain_e:
+            return {'status': 'error', 'message': f"Failed to load: {e}. Auto cloud-retraining failed: {retrain_e}"}
 
 models_dict = load_all_models()
 
